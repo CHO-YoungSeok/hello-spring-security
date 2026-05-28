@@ -50,26 +50,30 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div class="page-header">
             <h4 class="fw-bold mb-0">상품 목록</h4>
-            <small class="text-muted">총 <span th:text="${page.totalElements}"></span>개 상품 (페이지 <span th:text="${page.number + 1}"></span> / <span th:text="${page.totalPages == 0 ? 1 : page.totalPages}"></span>)</small>
+            <small class="text-muted">
+                총 <span th:text="${productPage.totalElements}"></span>개 상품
+                (페이지 <span th:text="${productPage.number + 1}"></span>
+                       / <span th:text="${productPage.totalPages}"></span>)
+            </small>
         </div>
         <a th:href="@{/products/add}" class="btn btn-danger btn-sm px-4 fw-semibold"
            sec:authorize="hasRole('ADMIN')">+ 상품 등록</a>
     </div>
 
-    <form th:action="@{/products}" method="get" class="mb-4">
-        <div class="input-group">
-            <input type="text" name="keyword" class="form-control" placeholder="상품명으로 검색" th:value="${keyword}">
-            <button class="btn btn-primary px-4" type="submit">검색</button>
-            <a th:href="@{/products}" class="btn btn-outline-secondary px-4">초기화</a>
-        </div>
+    <form th:action="@{/products}" method="get" class="mb-3 d-flex gap-2">
+        <input type="text" name="keyword" class="form-control"
+               placeholder="상품명으로 검색"
+               th:value="${keyword}"/>
+        <button type="submit" class="btn btn-primary px-4">검색</button>
+        <a th:href="@{/products}" class="btn btn-outline-secondary">초기화</a>
     </form>
 
     <div class="card border-0 shadow-sm">
         <div class="card-body p-0">
-            <div th:if="${#lists.isEmpty(products)}" class="text-center py-5 text-muted">
-                <p class="mb-0">등록된 상품이 없습니다.</p>
+            <div th:if="${productPage.isEmpty()}" class="text-center py-5 text-muted">
+                <p class="mb-0">검색 결과가 없습니다.</p>
             </div>
-            <div th:unless="${#lists.isEmpty(products)}" class="table-responsive">
+            <div th:unless="${productPage.isEmpty()}" class="table-responsive">
                 <table class="table table-hover mb-0 align-middle">
                     <thead>
                         <tr>
@@ -83,7 +87,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="p : ${products}">
+                        <tr th:each="p : ${productPage.content}">
                             <td class="ps-4 text-muted small" th:text="${p.id}"></td>
                             <td>
                                 <a th:href="@{/products/{id}(id=${p.id})}"
@@ -116,20 +120,42 @@
     </div>
 
     <!-- Pagination -->
-    <nav th:if="${page.totalPages > 0}" class="mt-4">
+    <nav class="mt-3" th:if="${productPage.totalPages > 0}">
         <ul class="pagination justify-content-center">
-            <li class="page-item" th:classappend="${page.first} ? 'disabled'">
-                <a class="page-link" th:href="@{/products(page=${page.number - 1}, keyword=${keyword})}">이전</a>
+    
+            <!-- 이전 버튼: 첫 페이지면 비활성(span), 아니면 링크(a) -->
+            <li class="page-item disabled" th:if="${!productPage.hasPrevious()}">
+                <span class="page-link">이전</span>
             </li>
-            
-            <li class="page-item" th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
-                th:classappend="${page.number == i} ? 'active'">
-                <a class="page-link" th:href="@{/products(page=${i}, keyword=${keyword})}" th:text="${i + 1}"></a>
+            <li class="page-item" th:unless="${!productPage.hasPrevious()}">
+                <a class="page-link"
+                   th:href="@{/products(page=${productPage.number - 1},
+                                 size=${productPage.size},
+                                 keyword=${keyword})}">이전</a>
             </li>
-            
-            <li class="page-item" th:classappend="${page.last} ? 'disabled'">
-                <a class="page-link" th:href="@{/products(page=${page.number + 1}, keyword=${keyword})}">다음</a>
+    
+            <!-- 페이지 번호: 0-based → 화면에는 i+1 로 표시, 현재 페이지에 active 클래스 -->
+            <li th:each="i : ${#numbers.sequence(0, productPage.totalPages - 1)}"
+                class="page-item"
+                th:classappend="${i == productPage.number} ? 'active'">
+                <a class="page-link"
+                   th:href="@{/products(page=${i},
+                                 size=${productPage.size},
+                                 keyword=${keyword})}"
+                   th:text="${i + 1}"></a>
             </li>
+    
+            <!-- 다음 버튼: 마지막 페이지면 비활성(span), 아니면 링크(a) -->
+            <li class="page-item disabled" th:if="${!productPage.hasNext()}">
+                <span class="page-link">다음</span>
+            </li>
+            <li class="page-item" th:unless="${!productPage.hasNext()}">
+                <a class="page-link"
+                   th:href="@{/products(page=${productPage.number + 1},
+                                 size=${productPage.size},
+                                 keyword=${keyword})}">다음</a>
+            </li>
+    
         </ul>
     </nav>
 </div>
