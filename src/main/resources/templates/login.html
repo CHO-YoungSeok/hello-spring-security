@@ -54,6 +54,7 @@
                         계정이 없으신가요?
                         <a th:href="@{/signup}" class="text-decoration-none fw-semibold" style="color:#e94560">회원가입</a>
                     </p>
+                    <p class="text-center text-muted small mt-4" th:text="${'실습 수행: ' + #temporals.format(#temporals.createNow(), 'yyyy-MM-dd HH:mm:ss') + ' │ 학번: 2271439 │ 성명: 조영석'}"></p>
                 </div>
             </div>
         </div>
