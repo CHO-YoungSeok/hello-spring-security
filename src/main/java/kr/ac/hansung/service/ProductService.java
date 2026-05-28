@@ -24,12 +24,14 @@ public class ProductService {
         return productRepository.findAll();
     }
 
-    @Transactional(readOnly = true)
-    public Page<Product> findProducts(String keyword, Pageable pageable) {
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return productRepository.findAll(pageable);
-        }
-        return productRepository.findByNameContainingIgnoreCase(keyword, pageable);
+    // 전체 목록 페이징 (Pageable → findAll에 그대로 전달)
+    public Page<Product> getProducts(Pageable pageable) {
+        return productRepository.findAll(pageable);
+    }
+
+    // 키워드 검색 + 페이징
+    public Page<Product> searchProducts(String keyword, Pageable pageable) {
+        return productRepository.findByNameContaining(keyword, pageable);
     }
 
     @Transactional(readOnly = true)
